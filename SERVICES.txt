@@ -1,0 +1,92 @@
+      	 Services
+一、yum源
+1、网络yum源：http、ftp
+2、自定义yum源：create repodata  文件名
+二、DNS
+1、功能
+1）正向解析：把IP解析成域名
+2）反向解析：把域名解析成IP（不常用）
+2、分布式结构
+1）根域： .(每个域名结尾都要有.，浏览器默认补齐)
+2）一级域名：.com .cn .net .edu .org
+3）二级域名：.net.cn .edu.cn .com.cn
+4）三级域名：
+5）完整的主机名：
+3、配置
+服务端
+1）装包bind（伯克利大学命名）、bind-chroot（虚拟根，安全）
+2）主配置文件/etc/named.conf （指定地址库文件）
+  地址库文件 /var/named/文件夹名称  cp -p （文件权限不变）
+3）重启服务named
+客户端
+1）指定nameserver   /etc/resolve.conf
+2）验证：nslookup  域名 
+4、多区域的
+5、DNS轮询
+6、泛域名解析
+7、别名    /var/named/  里     A   换 成   CNAME
+8、子域授权：在父域地址库文件/var/named/tedu.cn加子域的地址
+9、递归和迭代：两种查询方式，默认递归
+10、缓存dns：主配置文件里留下地址库文件地址，加上forwarders { ip;};
+11、split分离解析
+1）概述：客户端的不同，解析结果不同
+   目的：为客户提供网络最近的服务器资源
+2）多区域
+3）解析规则
+由上到下依次匹配，匹配即停止
+使用view时所有客户端必须在分类中
+所有zone必须在view中
+每个view中的zone必须一致
+4）acl可以定义变量  acl test { ip; ip; ip };
+三、raid磁盘阵列
+四、进程管理
+Kill pid       killall  进程名    加-9 是强制杀  
+Killall  -9 -u 用户名   杀死该用户启动的所有进程
+五、日志管理
+1、系统和程序的日记本，通过日志排除故障
+　　时间 主机 进程  内容
+2、日志分析工具
+　　Tailf  实时跟踪
+　　Tail  less grep
+　　Sed   Awk
+3、查看已登录的用户
+Users  who   w   三个的详细度不一样
+Last  -2  最近登录成功的两条记录
+Lastb  最近登录失败的用户
+4、journalctl  工具
+Journal  | grep  服务名
+Journal  -u  服务名  -p（优先级） 4（报错的等级）
+Journal -n  消息条数
+六、dhcp服务：dynamic  host configuration  protocol
+Dhcp分配地址的四次会话通过广播的方式，先到先得，一个网络中不能有多台dhcp服务器
+七、pxe装机：Pre-boot  execute environment
+1、含义：预启动执行环境，在操作系统之前运行，用于远程装机
+2、工作原理
+Pxe client 集成在网卡的启动芯片中
+当计算机引导时，从网卡芯片中把pxe client调入内存执行，获取pxe server配置、显示菜单，根据用户选择把远程引导程序下载到本机。
+3、网络装机服务端需要的服务zujian
+1）Dhcp：分配IP，及next server。
+修改配置文件：
+添加  next-server  本机ip；
+Filename “pxelinux.0”;
+2）Tftp：简单文件传输协议（不需要身份验证，只要能ping通），提供启动文件
+安装tftp-server：端口69，默认共享路径/var/lib/tftpboot/
+部署pxelinux.0文件
+a、yum  provides  */pxelinux.0  查询产生该文件的包
+b、rpm -ql  syslinux | grep  pxelinux.0  查询软件包安装路径
+c、部署菜单文件   isolinux.cfg   
+d、部署启动内核和驱动程序    vmlinuz  initrd.img
+e、部署图形模块和背景图片    vesamenu   splash.png
+3）http：提供rpm包
+八、rsync同步
+1、rsync  选项  源  目标  
+Rsync  -avz   a:all,归档，保留权限等   v：显示详细信息  z：传送过程中压缩和解压缩
+--delete -avz  删除目标文件跟源文件多余的文件
+2、rsync+ssh同步
+跟scp语法一样
+3、安装源码包步骤
+先安装工具：gcc和make
+执行：./configure
+然后：make  && make install
+九、cobbler部署
+十、rhel7破解开机密码

@@ -1,0 +1,8 @@
+rhel7破解开机密码
+1.重启系统，按e进入救援模式
+2.找到linux16这一行，在行尾添加rd.break  console=tty0  ,然后按ctrl+x进入
+3.mount  -o  remount.rw  /sysroot       重新挂载根系统，改为读写权限
+4.chroot  /sysroot                      进入系统根目录环境
+5.echo “新密码” | passwd  --stdin  root   给root改新密码
+6.touch  /.autorelabel                 设置selinux安全标签
+7.exit &&  reboot                     退出并且重新启动
