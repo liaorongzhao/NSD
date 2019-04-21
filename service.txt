@@ -6,3 +6,41 @@ rhel7破解开机密码
 5.echo “新密码” | passwd  --stdin  root   给root改新密码
 6.touch  /.autorelabel                 设置selinux安全标签
 7.exit &&  reboot                     退出并且重新启动
+
+cobbler装机
+1.解压缩包并拷贝到虚拟机
+2.在虚拟机搭建本地yum源，并且安装cobbler
+3.设置selinux和关闭防火墙
+4.配置cobbler
+/etc/cobbler/setting     next_server:    server:    manager_dhcp=1   pxe_just_once=1
+/etc/cobbler/dhcp.template   配置cobbler dhcp分配的网段和地址范围，将所有1网段改为4网段
+绝对路径解压缩cobbler_boot.tar.gz    众多的引导文件    绝对路径要tar选项加大P
+5.启动相关的服务
+cobblerd    cobbler主服务
+httpd       提供web页面，光盘内容，ks应答文件
+tftp        提供pxelinux.0和菜单文件等
+rsyncd      提供cobbler各个组件之间的同步
+6.同步刷新cobbler所有配置
+cobbler  sync
+7.导入光盘镜像数据
+cobbler  import  --path=挂载点  --name=镜像名 --arch=操作系统架构（可不写，系统会自动识别）
+cobbler  导入的镜像默认放在/var/www/ks.mirror/
+8.新建虚拟机测试，选择pxe网络装机。。。。。。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
