@@ -92,6 +92,28 @@ docker inspect         查看镜像详细信息
 docker  rmi   名字:标签     删除镜像    要先删除容器才能删镜像
 docker  tag   原名称:标签   新名称:新标签
 
+ 容器的命令
+1).docker  run   -i 交互式  -t 终端  -d后台进程 
+ docker  run -it  centos  /bin/bash      启动一个交互式的终端
+ docker  run -d   nginx    启动服务(非交互式)
+ docker   run  -itd  centos   /bin/bash   启动一个交互式的终端放入后台
+2).docker  ps   -a   显示所有的容器   -q 减少输出,只显示id
+3).docker start  $(docker  ps  -aq)  启动所有容器
+4.)docker stop   $(docker  ps  -aq)  停止所有容器
+5).docker  rm   $(docker  ps  -aq ) 删除所有容器 ,删除容器之前要先关闭容器
+
+3.自定义镜像
+  创建容器  docker  run -it  centos:latest   /bin/bash
+  修改配置,安装软件
+  ps  -a  看容器的id
+ 创建镜像   docker  commit   id     新容器名:latest
+  docker  images
+4.Dockerfile文件
+FROM   基础镜像
+ADD   复制文件到容器
+RUN   在容器中运行的命令  
+
+
 
 
 
