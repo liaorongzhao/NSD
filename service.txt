@@ -1,46 +1,92 @@
-rhel7ç ´è§£å¼€æœºå¯†ç 
-1.é‡å¯ç³»ç»Ÿï¼ŒæŒ‰eè¿›å…¥æ•‘æ´æ¨¡å¼
-2.æ‰¾åˆ°linux16è¿™ä¸€è¡Œï¼Œåœ¨è¡Œå°¾æ·»åŠ rd.break  console=tty0  ,ç„¶åŽæŒ‰ctrl+xè¿›å…¥
-3.mount  -o  remount.rw  /sysroot       é‡æ–°æŒ‚è½½æ ¹ç³»ç»Ÿï¼Œæ”¹ä¸ºè¯»å†™æƒé™
-4.chroot  /sysroot                      è¿›å…¥ç³»ç»Ÿæ ¹ç›®å½•çŽ¯å¢ƒ
-5.echo â€œæ–°å¯†ç â€ | passwd  --stdin  root   ç»™rootæ”¹æ–°å¯†ç 
-6.touch  /.autorelabel                 è®¾ç½®selinuxå®‰å…¨æ ‡ç­¾
-7.exit &&  reboot                     é€€å‡ºå¹¶ä¸”é‡æ–°å¯åŠ¨
-
-cobblerè£…æœº
-1.è§£åŽ‹ç¼©åŒ…å¹¶æ‹·è´åˆ°è™šæ‹Ÿæœº
-2.åœ¨è™šæ‹Ÿæœºæ­å»ºæœ¬åœ°yumæºï¼Œå¹¶ä¸”å®‰è£…cobbler
-3.è®¾ç½®selinuxå’Œå…³é—­é˜²ç«å¢™
-4.é…ç½®cobbler
-/etc/cobbler/setting     next_server:    server:    manager_dhcp=1   pxe_just_once=1
-/etc/cobbler/dhcp.template   é…ç½®cobbler dhcpåˆ†é…çš„ç½‘æ®µå’Œåœ°å€èŒƒå›´ï¼Œå°†æ‰€æœ‰1ç½‘æ®µæ”¹ä¸º4ç½‘æ®µ
-ç»å¯¹è·¯å¾„è§£åŽ‹ç¼©cobbler_boot.tar.gz    ä¼—å¤šçš„å¼•å¯¼æ–‡ä»¶    ç»å¯¹è·¯å¾„è¦taré€‰é¡¹åŠ å¤§P
-5.å¯åŠ¨ç›¸å…³çš„æœåŠ¡
-cobblerd    cobblerä¸»æœåŠ¡
-httpd       æä¾›webé¡µé¢ï¼Œå…‰ç›˜å†…å®¹ï¼Œksåº”ç­”æ–‡ä»¶
-tftp        æä¾›pxelinux.0å’Œèœå•æ–‡ä»¶ç­‰
-rsyncd      æä¾›cobblerå„ä¸ªç»„ä»¶ä¹‹é—´çš„åŒæ­¥
-6.åŒæ­¥åˆ·æ–°cobbleræ‰€æœ‰é…ç½®
-cobbler  sync
-7.å¯¼å…¥å…‰ç›˜é•œåƒæ•°æ®
-cobbler  import  --path=æŒ‚è½½ç‚¹  --name=é•œåƒå --arch=æ“ä½œç³»ç»Ÿæž¶æž„ï¼ˆå¯ä¸å†™ï¼Œç³»ç»Ÿä¼šè‡ªåŠ¨è¯†åˆ«ï¼‰
-cobbler  å¯¼å…¥çš„é•œåƒé»˜è®¤æ”¾åœ¨/var/www/ks.mirror/
-8.æ–°å»ºè™šæ‹Ÿæœºæµ‹è¯•ï¼Œé€‰æ‹©pxeç½‘ç»œè£…æœºã€‚ã€‚ã€‚ã€‚ã€‚ã€‚
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+      	 Services
+Ò»¡¢yumÔ´
+1¡¢ÍøÂçyumÔ´£ºhttp¡¢ftp
+2¡¢×Ô¶¨ÒåyumÔ´£ºcreate repodata  ÎÄ¼þÃû
+¶þ¡¢DNS
+1¡¢¹¦ÄÜ
+1£©ÕýÏò½âÎö£º°ÑIP½âÎö³ÉÓòÃû
+2£©·´Ïò½âÎö£º°ÑÓòÃû½âÎö³ÉIP£¨²»³£ÓÃ£©
+2¡¢·Ö²¼Ê½½á¹¹
+1£©¸ùÓò£º .(Ã¿¸öÓòÃû½áÎ²¶¼ÒªÓÐ.£¬ä¯ÀÀÆ÷Ä¬ÈÏ²¹Æë)
+2£©Ò»¼¶ÓòÃû£º.com .cn .net .edu .org
+3£©¶þ¼¶ÓòÃû£º.net.cn .edu.cn .com.cn
+4£©Èý¼¶ÓòÃû£º
+5£©ÍêÕûµÄÖ÷»úÃû£º
+3¡¢ÅäÖÃ
+·þÎñ¶Ë
+1£©×°°übind£¨²®¿ËÀû´óÑ§ÃüÃû£©¡¢bind-chroot£¨ÐéÄâ¸ù£¬°²È«£©
+2£©Ö÷ÅäÖÃÎÄ¼þ/etc/named.conf £¨Ö¸¶¨µØÖ·¿âÎÄ¼þ£©
+  µØÖ·¿âÎÄ¼þ /var/named/ÎÄ¼þ¼ÐÃû³Æ  cp -p £¨ÎÄ¼þÈ¨ÏÞ²»±ä£©
+3£©ÖØÆô·þÎñnamed
+¿Í»§¶Ë
+1£©Ö¸¶¨nameserver   /etc/resolve.conf
+2£©ÑéÖ¤£ºnslookup  ÓòÃû 
+4¡¢¶àÇøÓòµÄ
+5¡¢DNSÂÖÑ¯
+6¡¢·ºÓòÃû½âÎö
+7¡¢±ðÃû    /var/named/  Àï     A   »» ³É   CNAME
+8¡¢×ÓÓòÊÚÈ¨£ºÔÚ¸¸ÓòµØÖ·¿âÎÄ¼þ/var/named/tedu.cn¼Ó×ÓÓòµÄµØÖ·
+9¡¢µÝ¹éºÍµü´ú£ºÁ½ÖÖ²éÑ¯·½Ê½£¬Ä¬ÈÏµÝ¹é
+10¡¢»º´ædns£ºÖ÷ÅäÖÃÎÄ¼þÀïÁôÏÂµØÖ·¿âÎÄ¼þµØÖ·£¬¼ÓÉÏforwarders { ip;};
+11¡¢split·ÖÀë½âÎö
+1£©¸ÅÊö£º¿Í»§¶ËµÄ²»Í¬£¬½âÎö½á¹û²»Í¬
+   Ä¿µÄ£ºÎª¿Í»§Ìá¹©ÍøÂç×î½üµÄ·þÎñÆ÷×ÊÔ´
+2£©¶àÇøÓò
+3£©½âÎö¹æÔò
+ÓÉÉÏµ½ÏÂÒÀ´ÎÆ¥Åä£¬Æ¥Åä¼´Í£Ö¹
+Ê¹ÓÃviewÊ±ËùÓÐ¿Í»§¶Ë±ØÐëÔÚ·ÖÀàÖÐ
+ËùÓÐzone±ØÐëÔÚviewÖÐ
+Ã¿¸öviewÖÐµÄzone±ØÐëÒ»ÖÂ
+4£©acl¿ÉÒÔ¶¨Òå±äÁ¿  acl test { ip; ip; ip };
+Èý¡¢raid´ÅÅÌÕóÁÐ
+ËÄ¡¢½ø³Ì¹ÜÀí
+Kill pid       killall  ½ø³ÌÃû    ¼Ó-9 ÊÇÇ¿ÖÆÉ±  
+Killall  -9 -u ÓÃ»§Ãû   É±ËÀ¸ÃÓÃ»§Æô¶¯µÄËùÓÐ½ø³Ì
+Îå¡¢ÈÕÖ¾¹ÜÀí
+1¡¢ÏµÍ³ºÍ³ÌÐòµÄÈÕ¼Ç±¾£¬Í¨¹ýÈÕÖ¾ÅÅ³ý¹ÊÕÏ
+¡¡¡¡Ê±¼ä Ö÷»ú ½ø³Ì  ÄÚÈÝ
+2¡¢ÈÕÖ¾·ÖÎö¹¤¾ß
+¡¡¡¡Tailf  ÊµÊ±¸ú×Ù
+¡¡¡¡Tail  less grep
+¡¡¡¡Sed   Awk
+3¡¢²é¿´ÒÑµÇÂ¼µÄÓÃ»§
+Users  who   w   Èý¸öµÄÏêÏ¸¶È²»Ò»Ñù
+Last  -2  ×î½üµÇÂ¼³É¹¦µÄÁ½Ìõ¼ÇÂ¼
+Lastb  ×î½üµÇÂ¼Ê§°ÜµÄÓÃ»§
+4¡¢journalctl  ¹¤¾ß
+Journal  | grep  ·þÎñÃû
+Journal  -u  ·þÎñÃû  -p£¨ÓÅÏÈ¼¶£© 4£¨±¨´íµÄµÈ¼¶£©
+Journal -n  ÏûÏ¢ÌõÊý
+Áù¡¢dhcp·þÎñ£ºdynamic  host configuration  protocol
+Dhcp·ÖÅäµØÖ·µÄËÄ´Î»á»°Í¨¹ý¹ã²¥µÄ·½Ê½£¬ÏÈµ½ÏÈµÃ£¬Ò»¸öÍøÂçÖÐ²»ÄÜÓÐ¶àÌ¨dhcp·þÎñÆ÷
+Æß¡¢pxe×°»ú£ºPre-boot  execute environment
+1¡¢º¬Òå£ºÔ¤Æô¶¯Ö´ÐÐ»·¾³£¬ÔÚ²Ù×÷ÏµÍ³Ö®Ç°ÔËÐÐ£¬ÓÃÓÚÔ¶³Ì×°»ú
+2¡¢¹¤×÷Ô­Àí
+Pxe client ¼¯³ÉÔÚÍø¿¨µÄÆô¶¯Ð¾Æ¬ÖÐ
+µ±¼ÆËã»úÒýµ¼Ê±£¬´ÓÍø¿¨Ð¾Æ¬ÖÐ°Ñpxe clientµ÷ÈëÄÚ´æÖ´ÐÐ£¬»ñÈ¡pxe serverÅäÖÃ¡¢ÏÔÊ¾²Ëµ¥£¬¸ù¾ÝÓÃ»§Ñ¡Ôñ°ÑÔ¶³ÌÒýµ¼³ÌÐòÏÂÔØµ½±¾»ú¡£
+3¡¢ÍøÂç×°»ú·þÎñ¶ËÐèÒªµÄ·þÎñzujian
+1£©Dhcp£º·ÖÅäIP£¬¼°next server¡£
+ÐÞ¸ÄÅäÖÃÎÄ¼þ£º
+Ìí¼Ó  next-server  ±¾»úip£»
+Filename ¡°pxelinux.0¡±;
+2£©Tftp£º¼òµ¥ÎÄ¼þ´«ÊäÐ­Òé£¨²»ÐèÒªÉí·ÝÑéÖ¤£¬Ö»ÒªÄÜpingÍ¨£©£¬Ìá¹©Æô¶¯ÎÄ¼þ
+°²×°tftp-server£º¶Ë¿Ú69£¬Ä¬ÈÏ¹²ÏíÂ·¾¶/var/lib/tftpboot/
+²¿Êðpxelinux.0ÎÄ¼þ
+a¡¢yum  provides  */pxelinux.0  ²éÑ¯²úÉú¸ÃÎÄ¼þµÄ°ü
+b¡¢rpm -ql  syslinux | grep  pxelinux.0  ²éÑ¯Èí¼þ°ü°²×°Â·¾¶
+c¡¢²¿Êð²Ëµ¥ÎÄ¼þ   isolinux.cfg   
+d¡¢²¿ÊðÆô¶¯ÄÚºËºÍÇý¶¯³ÌÐò    vmlinuz  initrd.img
+e¡¢²¿ÊðÍ¼ÐÎÄ£¿éºÍ±³¾°Í¼Æ¬    vesamenu   splash.png
+3£©http£ºÌá¹©rpm°ü
+°Ë¡¢rsyncÍ¬²½
+1¡¢rsync  Ñ¡Ïî  Ô´  Ä¿±ê  
+Rsync  -avz   a:all,¹éµµ£¬±£ÁôÈ¨ÏÞµÈ   v£ºÏÔÊ¾ÏêÏ¸ÐÅÏ¢  z£º´«ËÍ¹ý³ÌÖÐÑ¹ËõºÍ½âÑ¹Ëõ
+--delete -avz  É¾³ýÄ¿±êÎÄ¼þ¸úÔ´ÎÄ¼þ¶àÓàµÄÎÄ¼þ
+2¡¢rsync+sshÍ¬²½
+¸úscpÓï·¨Ò»Ñù
+3¡¢°²×°Ô´Âë°ü²½Öè
+ÏÈ°²×°¹¤¾ß£ºgccºÍmake
+Ö´ÐÐ£º./configure
+È»ºó£ºmake  && make install
+¾Å¡¢cobbler²¿Êð
+Ê®¡¢rhel7ÆÆ½â¿ª»úÃÜÂë

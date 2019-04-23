@@ -1,0 +1,61 @@
+发邮件  mail -s error（主题）root <  mail.txt   是交互的，写脚本时要事先准备一个文件
+
+grant   replication slave on *.*  to lili@192.168.4.53 identified by "123456";
+
+change master to master_host="192.168.4.41",
+master_user="lili",
+master_password="123456",
+master_log_file="node41-bin.000002",
+master_log_pos=154;
+select plugin_name plugin_status from information_schema.plugins where plugin_name like "%semi%";
+grant replication slave , replication client on *.* to scalemon@"%" identified by "123456";
+
+grant select  on *.*  to maxscale@"%" identified by "123456";
+
+virsh console rh7_node66
+nmcli connection modify eth0 ipv4.method manual ipv4.addresses  192.168.4.3/24     connection.autoconnect yes   &&  nmcli connection up eth0
+nmcli connection up eth0
+echo  node3.tedu.cn > /etc/hostname && hostname node3.tedu.cn
+
+
+server_id=53
+log-bin
+binlog-format=mixed
+validate_password_policy=0
+validate_password_length=6
+plugin-load=rpl_semi_sync_master=semisync_master.so
+plugin-load=rpl_semi_sync_slave=semisync_slave.so
+rpl_semi_sync_master_enabled=1
+rpl_semi_sync_slave_enabled=1
+
+load data infile "/var/lib/mysql-files/passwd"  into table user fields terminated by ":" lines terminated by "\n";
+
+
+
+
+ssh-keygen  
+
+
+virsh  echo console rh7_node52  
+
+
+cd /root/redis-4.0.8/utils/  && ./install_server.sh
+netstat  -utnlp | grep redis
+
+
+恢复redis 的aof 文件
+Redis-check-eof  --fix   appendonly.aof
+
+
+
+config={_id:"rs1",members:[{"_id:0","host:192.168.4.70:27050"},{"_id:1","host:192.168.4.69:27049"},{"_id:2","host:192.168.4.68:27058"}]};
+
+nmcli：网络管理命令行接口：NetworkManager Command-Line Interface
+nmtui：网络管理文本用户接口：NetworkManager Text-User Interface
+
+
+
+
+
+
+
