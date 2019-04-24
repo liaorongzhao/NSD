@@ -1,5 +1,7 @@
-发邮件  mail -s error（主题）root <  mail.txt   是交互的，写脚本时要事先准备一个文件
-
+发邮件  mail -s error（主题）root <  mail.txt   是交互的，写脚本时要事先准备一个文件   
+   还要写个计划任务  crontab  -e
+    邮件默认在 /var/spool/mail/root   可以删除,后边会自动生成
+ping  -c3  -i0.5 -W2   ip   -c是次数 -i是间隔的时间  -W(大写的)是等待的时间
 grant   replication slave on *.*  to lili@192.168.4.53 identified by "123456";
 
 change master to master_host="192.168.4.41",
