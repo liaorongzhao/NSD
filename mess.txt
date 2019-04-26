@@ -1,3 +1,5 @@
+
+强制用户第一次登录时改密码的命令:  chage -d 0  username
 发邮件  mail -s error（主题）root <  mail.txt   是交互的，写脚本时要事先准备一个文件   
    还要写个计划任务  crontab  -e
     邮件默认在 /var/spool/mail/root   可以删除,后边会自动生成

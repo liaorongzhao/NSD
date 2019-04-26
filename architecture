@@ -1,0 +1,38 @@
+Http://118.144.89.240/ansible.txt
+ansible部署
+一.在ansible管理主机上配置源
+  yum  -y install  ansible
+二.安装完成没有报错,执行
+  ansible  --version  正确显示版本即可
+三.ansible的配置文件ansible.cfg
+  ansible.cfg的查找顺序:
+1.ANSIBLE_CONFIG变量定义的配置文件
+2.当前目录下的./ansible.cfg
+3.家目录下的~/ansible.cfg 
+4./etc/ansible/ansible.cfg
+
+
+四.给组配置用户名和密码
+[web:vars]
+ansible_ssh_user="root"
+ansible_ssh_passwd="123456"
+一个大的分组可以引用其他分组
+[app:children]
+web
+db
+自定义主机分组
+1)建文件夹
+2)
+五.基本命令
+1.ansible  主机分组名 -m  模块名 -a "命令和参数"
+2.给所有主机部署公钥
+ansible  all  -m  authorized_key  -a "user=root  exclusive=true manage_dir=true  key='$(< /root/.ssh/id_rsa.pub)'"  -k  
+六.模块
+1.ansible-doc  -l  显示所有模块
+2.command  默认模块
+3.shell   
+4.raw  兼容性强
+5.script  脚本
+6.copy    
+7.lineinfile  替换的模式是整行删除重写    'path=路径 regexp="^ONBOOT" line="ONBOOT=\"no\""'
+  replace      替换查找到的部分           'path=路径 regerp="^(ONBOOT=).*" replace="\1\"yes\""'
