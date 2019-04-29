@@ -36,3 +36,58 @@ ansible  all  -m  authorized_key  -a "user=root  exclusive=true manage_dir=true 
 6.copy    
 7.lineinfile  替换的模式是整行删除重写    'path=路径 regexp="^ONBOOT" line="ONBOOT=\"no\""'
   replace      替换查找到的部分           'path=路径 regerp="^(ONBOOT=).*" replace="\1\"yes\""'
+8.yum  -a 'name="包名,包名",state=installed'
+9.service  -a 'name=服务名,state=start,enabled=yes'
+10.setup  -a  filter  过滤信息
+七.ansible的脚本(playbook)
+1.ansible的七种武器(命令)
+1)ansible命令ad-hok     重要 
+2)ansible-doc     重要
+3)ansible-console
+4)ansible-galaxy
+5)ansible-playbook 重要
+6)ansible-vault  加密
+7)ansible-pull/push   默认是push模式
+八.json和yaml
+1.yaml格式   符号后边都要有一个空格
+数组-和一个空格表示  "- "
+键值对用:和一个空格  ": "
+注释#加一个空格   "# "
+2.jinja2模板
+表达式包含在"{{ }}"中
+控制语句在"{% %}"中
+九.playbook
+ 添加用户忽略错误: useradd  lisi  || true  
+                   ignore_errors: True
+  vars: 定义变量
+ notify: 调用标记
+ handlers: 
+   -name: 标记
+    service:
+        name: 服务名字
+        state: restart
+
+register: result
+ 和when(判断)
+with_items: ["", "" ,"" ,]  标准循环
+with_nested                 循环嵌套
+tags                     定义标识
+include: 引入一个文件
+roles:  引入一个项目
+
+语法检测   ansible-playbook   --syntax-check   playbook.yml
+    测试运行     ansible-playbook    -C   playbook 
+    显示收到影响的主机              ansible-playbook   --list-hosts   playbook  
+   
+
+
+
+
+
+
+
+
+
+
+
+
