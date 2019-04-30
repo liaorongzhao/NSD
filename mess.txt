@@ -1,4 +1,8 @@
 
+
+
+
+echo  -e  "\033[35mOK\033[0m"   35m是颜色，0m是黑色，  意思就是显示一个颜色输出ok后再还原以前的颜色
 强制用户第一次登录时改密码的命令:  chage -d 0  username
 发邮件  mail -s error（主题）root <  mail.txt   是交互的，写脚本时要事先准备一个文件   
    还要写个计划任务  crontab  -e
