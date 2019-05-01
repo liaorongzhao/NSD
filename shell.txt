@@ -144,7 +144,19 @@ ${变量% }  最短匹配   ${a%% }  最长匹配   去尾
  一个变量存多个值   a=(11 22 33)   echo ${a[0]} echo {a[1]}
                     a=(aa bb cc)     echo${#a[]} 数组元素个数
 14.交互式脚本
+安装expect
+expect <<EOF
+spawn  交互的命令
+expect “”  { send    内容\n}
+EOF
 15.正则表达式    
+
+16.sed:steam  editor
+非交互
+逐行处理
+ 
+sed -n  "$=" /etc/passwd   打印行号
+
 
 
 
