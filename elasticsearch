@@ -1,0 +1,40 @@
+一.安装
+
+
+二.单机安装
+
+三.集群安装
+
+四.增删改查,通过http协议
+http请求方法
+put  增 
+delete 删
+post  改(上传)
+get  查(下载)
+  
+curl常用参数
+-A  修改请求agent
+-X  设置请求方法
+-i  显示返回头信息
+
+五.es插件
+1.head插件:展现集群的拓扑,提供快捷菜单
+2.kopf:管理工具,提供对elasticsearch管理的API
+3.bigdesk:集群监控工具,通过他查看集群的状态,cpu,内存等情况
+
+安装插件要用网络路径,如果下载到本地也要加上file://本地路径
+/usr/share/elasticsearch/bin/plugin   install  ftp://192.168.1.254/public/elasticsearch-kopf-master.zip
+
+六.rest API
+ /_cat/health
+
+七.添加索引  curl -XPUT http://es1:9200/tedu/  -d  '{
+"setting":{"index":{"number_of_shards":5,"number_of_replicas":1}}}'
+   增加类型(数据) curl  -XPUT  http://es1:9200/tedu/teacher/1   -d  '{
+"title":"阶段1","name":{"first":"丁丁","last":"静静"},"age":50}'
+   更改数据    curl  -XPOST  http://es1:9200/tedu/teacher/1/_update  -d  '{
+"doc":{"age":18}}'
+   查询     curl   -XGET(默认)
+   删除            -XDELETE
+             
+ 

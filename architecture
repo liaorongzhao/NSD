@@ -23,10 +23,12 @@ db
 自定义主机分组
 1)建文件夹
 2)
+
 五.基本命令
 1.ansible  主机分组名 -m  模块名 -a "命令和参数"
 2.给所有主机部署公钥
 ansible  all  -m  authorized_key  -a "user=root  exclusive=true manage_dir=true  key='$(< /root/.ssh/id_rsa.pub)'"  -k  
+
 六.模块
 1.ansible-doc  -l  显示所有模块
 2.command  默认模块
@@ -39,6 +41,7 @@ ansible  all  -m  authorized_key  -a "user=root  exclusive=true manage_dir=true 
 8.yum  -a 'name="包名,包名",state=installed'
 9.service  -a 'name=服务名,state=start,enabled=yes'
 10.setup  -a  filter  过滤信息
+
 七.ansible的脚本(playbook)
 1.ansible的七种武器(命令)
 1)ansible命令ad-hok     重要 
@@ -48,6 +51,7 @@ ansible  all  -m  authorized_key  -a "user=root  exclusive=true manage_dir=true 
 5)ansible-playbook 重要
 6)ansible-vault  加密
 7)ansible-pull/push   默认是push模式
+
 八.json和yaml
 1.yaml格式   符号后边都要有一个空格
 数组-和一个空格表示  "- "
@@ -56,6 +60,7 @@ ansible  all  -m  authorized_key  -a "user=root  exclusive=true manage_dir=true 
 2.jinja2模板
 表达式包含在"{{ }}"中
 控制语句在"{% %}"中
+
 九.playbook
  添加用户忽略错误: useradd  lisi  || true  
                    ignore_errors: True
