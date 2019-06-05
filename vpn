@@ -1,0 +1,20 @@
+vpn:virtual  private  network
+gre  vpn  只支持linux,系统内核自带,不用多装软件
+pptp vpn   数据不加密
+l2tp+ipsec vpn  数据加密
+
+
+第一步先要加载gre模块
+lsmod  查看系统当前使用的模块
+lsmod  | grep  gre
+modprobe  ip_gre   加载jre模块
+modinfo  ip_gre  查看模块的详细信息
+第二步创建隧道tunnel
+ip  tunnel  add  tunnel0  mode gre remote  ip1 local ip2 
+//添加隧道的名字叫tnnnel0(名字可以随便)
+//mode设置隧道启用的模块gre
+//remote ip1是与远程其他主机建立隧道的地址
+//local  ip2是本机的ip地址
+第三步启用隧道
+ip link show   查看tunnel0网卡的状态
+
