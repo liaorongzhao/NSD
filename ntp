@@ -1,0 +1,20 @@
+ntp  -->network  time  protocol 网络时间协议
+分层设计 stratum总层不能超过15层
+
+服务端
+一.yum -y install chrony
+二./etc/chrony.conf  
+server 0.centos.pool.ntp.org iburst   //server用户客户端指向上层NTP服务器
+allow 192.168.4.0/24                 //允许那个IP或网络访问NTP
+#deny  192.168.4.1                   //拒绝那个IP或网络访问NTP
+local stratum 10                    //设置NTP服务器的层数量
+三.启动服务,关闭防火墙
+
+客户端
+一.yum -y install chrony
+二./etc/chrony.conf
+server 192.168.4.5 iburst       //设置与哪台服务器同步数据
+三.重启服务systemctl  restart  chronyd
+四.验证
+date  -s  "hour:minute"         //调整时间（小时：分钟）
+date                            //查看修改后的时间
