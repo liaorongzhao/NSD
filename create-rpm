@@ -1,0 +1,50 @@
+源码包封装成rpm包
+
+第一步:装包  
+  yum -y install  rpm-build
+
+第二步:生成 rpmbuild 目录   
+   rpmbuild -ba nginx.spec   会报错,但是能生成需要的目录结构
+
+第三步:查看目录结构ls /root/rpmbuild,并且把源码包拷贝到SOURCES目录下
+
+第四步:修改配置文件
+ vim /root/rpmbuild/SPECS/nginx.spec 
+
+Name:nginx        
+Version:1.12.0               版本号
+Release:    10               这个相当于第几次做rpm,可以随便写
+Summary: Nginx is a web server software.    自定义
+License:GPL                  一般业内默认,意思是开源
+URL:    www.test.com          自定义
+Source0:nginx-1.12.2.tar.gz   源码包的包名
+#BuildRequires:    
+#Requires:    
+%description
+nginx [engine x] is an HTTP and reverse proxy server.
+%prep
+%setup –q                            //自动解压源码包，并cd进入目录
+%build
+./configure
+make %{?_smp_mflags}
+%install
+make install DESTDIR=%{buildroot}
+cp /root/rpmbuild/SPECS/nginx.sh %{buildroot}/usr/local/nginx/    
+##//非必须操作，注意，这里是将一个脚本拷贝到安装目录，必须提前准备该文件    (这一步可以不用做)
+%files
+%doc
+/usr/local/nginx/*            //对哪些文件与目录打包
+%changelog
+
+第五步:安装源码包需要的依赖包
+yum –y install  gcc  pcre-devel zlib-devel openssl-devel
+
+第六步:用rpmbuild创建rpm包
+rpmbuild -ba /root/rpmbuild/SPECS/nginx.spec
+
+第七步:查看生成的rpm包
+ls /root/rpmbuild/RPMS/x86_64/nginx-1.12.2-10.x86_64.rpm
+
+
+
+

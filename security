@@ -1,0 +1,80 @@
+加密与解密
+
+数据机密性算法
+a)对称性AES,DES
+b)非对称rsa,dsa
+
+信息完整性
+MD5  SHA256 SHA512
+
+md5sum  文件
+
+##############################
+入侵检测
+AIDE 不能防止入侵,但是可以做全面的入侵检测,有变化可以报警
+AIDE 过检查数据文件的权限、时间、大小、哈希值等，校验数据的完整性
+
+1.yum  -y  install  aide
+  修改配置文件/etc/aide.conf,把需要检验的目录填进去,不需要校验的可以注释掉,或者校验的方式也可以自己定义变量
+  aide  -i或者--init  入侵前的检测  
+ 可以--help查看具体的选项意思
+使用方式是检验前做一次,校验完的数据会保存在/var/lib/aide/aide.db.new.gz initialized,生产环境下要把该文件拷贝到另外地方,u盘或者二其他安全的地方
+
+2.之后把aide.db.new.gz initialized拷贝到/var/lib/aide/下,改名字为aide.db.gz initialized
+注意:改名之后没有new,因为配置文件里写的要与aide.db.gz initialized文件做校验
+3.aide  -C或者--check
+会显示有变化的地方
+
+##############################################################
+扫描  nmap  --->network  map
+
+nmap  -sP                                  icmp扫描.也就是ping
+      -sT   后边跟单个ip地址或者整个网段   全开扫描 
+      -sS                                 半开扫描(生产环境下做要提前报备,会报警),比sT效率要高
+      -A        目标系统全面分析        可以追踪路由
+traceroute  ip或者域名
+
+############################################################################
+ 
+抓包
+
+tcpdump   //监控选项如下：
+// -i，指定监控的网络接口
+// -A，转换为 ACSII 码，以方便阅读
+// -w，将数据包信息保存到指定文件
+// -r，从指定文件读取数据包信息
+
+ftp
+
+tcpdump  -A  -w  ftp.cap  host 192.168.4.5  and  tcp  port  21        //抓包并保存,ftp.cap可以不提前建,会自动新建
+tcpdump  -A  -r  ftp.cap | egrep  '(USER|PASS)'                       //分析数据包
+
+http
+ 
+安装nginx,添加用户认证    auth_basic  和  auth_basic_user_file
+安装http-tools         htpasswd  -c  /usr/local/nginx/pass  tom   生成用户文件和密码
+
+tcpdump  -A -w  /root/a.txt   host  客户机ip      先监控,准备抓包
+客户机访问网站,输入用户名和密码                   客户机访问网页
+tcpdump  -A -r  /root/a.txt  |  grep   basic      在对应的文件读取
+把过滤到的字段管道给base64 -d 解码就能看到客户机输入的用户名和密码明文
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
