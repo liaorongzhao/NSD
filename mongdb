@@ -1,0 +1,391 @@
+搭建mongdb服务器
+
+MongoDB：
+介于关系数据库和非关系数据库之间的产品
+一款基于分布式文件存储的数据库，旨在为WEB应用提供可扩展的高性能数据存储解决方案
+将数据存储为一个文档（类似于JSON对象），数据结构由键值（key=>value）对组成
+支持丰富的查询表达，可以设置任何属性的索引
+支持副本集，分片
+
+第一步:解包,拷贝命令
+ tar -xf mongodb-linux-x86_64-rhel70-3.6.3.tgz
+mkdir  /usr/local/mongodb
+ cp -r \ 
+ /root/mongodb/mongodb-linux-x86_64-rhel70-3.6.3/bin/ /usr/local/mongodb/
+
+cd /usr/local/mongodb/
+mkdir etc        //创建存放配置文件的目录
+mkdir log        //创建存放日志文件的目录
+mkdir -p data/db    //创建存放数据库的目录db，必须为这个名字
+
+vim etc/mongodb.conf
+dbpath=/usr/local/mongodb/data/db/     //指定数据库目录
+logpath=/usr/local/mongodb/log/mongodb.log    //指定日志文件
+logappend=true      //以追加的方式记录日志信息
+fork=true       //服务以守护进程的方式运行
+
+第二步:设置PATH变量
+vim /etc/profile
+export PATH=/usr/local/mongodb/bin:$PATH
+source  /etc/profile
+
+第三步:启动服务
+mongod  -f /usr/local/mongodb/etc/mongodb.conf
+netstat -antup | grep mongod
+
+#########################################################
+服务的管理
+
+连接服务
+mongo   //默认本地连接，没有密码
+> show dbs        //显示已有的库
+> db                //查看当前所在的库
+> exit
+
+停止服务
+mongod  --dbpath=/usr/local/mongodb/data/db/  --shutdown        //指定数据库目录停止服务，不然停止不了
+
+由于启动和停止服务名字太长，可以起一个别名
+alias cmdb='mongod  --dbpath=/usr/local/mongodb/data/db/  --shutdown'
+alias smdb='mongod -f /usr/local/mongodb/etc/mongodb.conf'
+
+修改配置文件，使用ip和端口连接服务
+vim /usr/local/mongodb/etc/mongodb.conf
+bind_ip=192.168.4.51    //在原先的基础上面加上这两个，指定ip
+port=27077            //指定端口号
+
+smdb        //启动服务，之前设置过别名
+mongo --host 192.168.4.51 --port 27077        //连接服务成功
+
+###############################################################################
+
+练习库的创建、查看、切换、删除
+练习集合的创建、查看、删除
+练习文档的查看、插入、删除
+
+MongoDB常用管理操作
+1）数据库管理
+show dbs 查看已有的库
+db 显示当前所在的库
+use 库名 切换库，若库不存在延时创建库
+show collections 或 show tables 查看库下已有集合
+db.dropDatabase() 删除当前所在的库
+
+2）集合管理
+show collections 或 show tables 查看集合
+db.集合名.drop() 删除集合
+db.集合名.save({'',''}) 创建集合，集合不存在时，创建并添加文档
+
+> db.t1.save({name:"yaya",age:60,addr:"hebei",email:"yaya@163.com"})
+WriteResult({ "nInserted" : 1 }) 
+> db.t1.save({name:"yaya",age:70})
+WriteResult({ "nInserted" : 1 })
+> show tables
+t1
+
+查看集合里的所有内容
+>  db.t1.find()
+{ "_id" : ObjectId("5badf1b420cdd1574b851f12"), "name" : "yaya", "age" : 60, "addr" : "hebei", "email" : "yaya@163.com" }
+{ "_id" : ObjectId("5badf21820cdd1574b851f13"), "name" : "yaya", "age" : 70 }
+>
+
+查看第一行的内容
+> db.t1.findOne()
+{
+    "_id" : ObjectId("5badf1b420cdd1574b851f12"),
+    "name" : "yaya",
+    "age" : 60,
+    "addr" : "hebei",
+    "email" : "yaya@163.com"
+}
+
+3）文档管理
+命令格式：
+db.集合名.find()
+db.集合名.count()
+db.集合名.insert({“name”:”jim”})
+db.集合名.find(条件)
+db.集合名.findOne() 返回查询一条文档
+db.集合名.remove({}) 删除所有文档
+db.集合名.remove({条件}) 删除与条件匹配的所有文档
+
+> db.t1.save({name:"xm",age:18,"addr":"hn","email":"xm.qq.com","like":"nicai"})
+WriteResult({ "nInserted" : 1 })
+> db.t1.count()
+3
+> db.t1.find({name:"xm"})
+{ "_id" : ObjectId("5badf4bc20cdd1574b851f14"), "name" : "xm", "age" : 18, "addr" : "hn", "email" : "xm.qq.com", "like" : "nicai" }
+
+删除与条件匹配的所有文档
+>  db.t1.remove({name:"yaya"})
+WriteResult({ "nRemoved" : 2 })
+
+删除所有文档
+>  db.t1.remove({})
+WriteResult({ "nRemoved" : 1 })
+
+4）插入记录
+> db.col.insert(
+{ title: 'MongoDB 教程',
+   description: 'MongoDB 是一个 Nosql 数据库',
+   by: 'MongoDB中文网', 
+   url: 'http://www.mongodb.org.cn', 
+   tags: ['mongodb', 'database', 'NoSQL'],
+   likes: 100 
+ }
+ )
+WriteResult({ "nInserted" : 1 })
+
+删除记录
+> db.col.remove({'title':'MongoDB 教程'})
+WriteResult({ "nRemoved" : 1 })
+
+############################################################################
+基本数据类型
+
+1）null：用于表示空值或者不存在的字段，{“x”:null}
+
+2）布尔值：布尔类型有两个值true和false，{“x”:true}
+> db.t1.save({name:"zhangsan",addr:"shanghai",marry:"true"})
+WriteResult({ "nInserted" : 1 })
+> db.t1.save({name:"lisi",age:35,addr:"beijing",marry:"false"})
+WriteResult({ "nInserted" : 1 })
+
+3）数值：shell默认使用64为浮点型数值，{“x”：3.14}或{“x”：3}，对于整型值，可以使用NumberInt（4字节符号整数）或NumberLong（8字节符号整数），{“x”:NumberInt(“3”)}{“x”:NumberLong(“3”)}
+> db.t1.save({name:"alice",woker:"gcs",pay:28888.88})
+WriteResult({ "nInserted" : 1 })
+
+4）字符串：UTF-8字符串都可以表示为字符串类型的数据，{“x”：“呵呵”}
+> db.t1.save({name:"hehe",woker:null,pay:null})
+WriteResult({ "nInserted" : 1 })
+> db.t1.save({name:"呵呵",woker:"没有",pay:"没有"})
+WriteResult({ "nInserted" : 1 })
+
+5）日期:日期被存储为自新纪元依赖经过的毫秒数，不存储时区，{“x”:new Date()}
+> db.t1.save({name:"bobo",wokertime:new Date()})
+WriteResult({ "nInserted" : 1 })
+> db.t1.find({name:"bobo"})
+{ "_id" : ObjectId("5badf8ff6827555e3fd8680f"), "name" : "bobo", "wokertime" : ISODate("2018-09-28T09:48:47.437Z") }
+>
+
+6）正则表达式：查询时，使用正则表达式作为限定条件，语法与JavaScript的正则表达式相同，{“x”:/[abc]/}
+> db.t1.save({procname:"php",code:/abc$/})
+WriteResult({ "nInserted" : 1 })
+>  db.t1.save({procname:"php",code:/[a-z]/})
+WriteResult({ "nInserted" : 1 })
+> db.t1.save({procname:"java",code:/[a-z]/})
+WriteResult({ "nInserted" : 1 })
+
+7）数组：数据列表或数据集可以表示为数组，{“x”： [“a“，“b”,”c”]}，一个字段有多个值
+> db.t1.save({name:"jerry",email:["plj@163.com","lij@yahoo.net","lij@tedu"]})
+WriteResult({ "nInserted" : 1 })
+> db.t1.find({name:"jerry"})
+{ "_id" : 9, "name" : "jerry", "work" : null }
+{ "_id" : ObjectId("5badf9976827555e3fd86813"), "name" : "jerry", "email" : [ "plj@163.com", "lij@yahoo.net", "lij@tedu" ] }
+>
+8）内嵌文档：文档可以嵌套其他文档，被嵌套的文档作为值来处理，{“x”:{“y”:3 }}
+> db.t1.save({book: {zuozhe:"dmy",bname:"yuweizhidao",jiaqian:69,version:2.0 }})
+WriteResult({ "nInserted" : 1 })
+
+9)对象id：对象id是一个12字节的字符串，是文档的唯一标识，{“x”: objectId() }
+> db.t1.save({stunum:ObjectId(),name:"yaya",class:"nsd"})
+WriteResult({ "nInserted" : 1 })
+> db.t1.find({name:"yaya"})
+{ "_id" : ObjectId("5badfa966827555e3fd86816"), "stunum" : ObjectId("5badfa966827555e3fd86815"), "name" : "yaya", "class" : "nsd" }
+//自己定义一个id字段，一般情况下都用内置的id字段，相当于mysql里的primary key auto_increment
+
+10）二进制数据：二进制数据是一个任意字节的字符串。它不能直接在shell中使用。如果要将非utf-字符保存到数据库中，二进制数据是唯一的方式。
+
+11）代码：查询和文档中可以包括任何JavaScript代码，{“x”:function(){/*…*/}}
+> db.t1.save({lname:"html",codecript:function(){/*...*/}})
+WriteResult({ "nInserted" : 1 })
+> db.t1.save({lname:"html",codecript:function(){/*<html><h1>abc</h1></html>*/}})
+WriteResult({ "nInserted" : 1 })
+
+##############################################################################
+
+数据导入导出/备份/恢复
+
+数据备份
+
+mongodump --host  192.168.4.51 --port 27077
+//不指定备份哪个库，默认备份所有，不指定目录，自动生成dump目录，备份的数据在这个里面
+
+bsondump dump/ddsdb/t1.bson        //查看bson文件内容
+
+备份时指定备份的库和备份目录
+mongodump --host  192.168.4.51 --port 27077  -d  ddsdb -o /root/bbsdb
+//-d备哪个库，-o指定备份的目录，备份bbsdb库里的所有到/root/bbsdb
+
+只备份ddsdb库里的集合t1
+mongodump --host  192.168.4.51 --port 27077  -d  ddsdb -c t1 -o /root/bbsdb.t
+
+数据恢复
+
+mongorestore --host  192.168.4.51 --port 27077  -d  ddsdb  /root/bbsdb.t/ddsdb/
+//-d  ddsdb恢复到数据库的目录，从/root/bbsdb.t1/ddsdb/目录恢复
+###############################################################################
+
+数据的导出
+
+mongoexport  --host  192.168.4.51 --port 27077  -d  ddsdb  -c t1 -f name --type=csv    -o /root/lig1.csv
+//导出csv格式，必须要指定导出的字段名 ，导出name字段 
+
+cat lig1.csv
+
+mongoexport  --host  192.168.4.51 --port 27077  -d  ddsdb  -c t1 -q '{name:"bob"}' -f name,age --type=csv    -o /root/lig2.csv
+//从ddsdb的它1里导出名字为bob的name字段和age字段
+
+mongoexport  --host  192.168.4.51 --port 27077 -d ddsdb -c t1 --type=json    -o /root/lig3.json
+//导出json格式
+
+mongoexport  --host  192.168.4.51 --port 27077 -d ddsdb -c t1 -f name --type=json    -o /root/lig4.json
+//指定列名导出，导出name字段
+
+数据的导入
+
+用json的格式导入：表里要没有数据，不然导入不成功
+mongoimport --host  192.168.4.51 --port 27077 -d ddsdb -c t1 --type=json       /root/lig3.json
+
+用csv的格式导入：表里可以有数据
+mongoimport --host  192.168.4.51 --port 27077  -d ddsdb -c t1   --headerline  --type=csv /root/lig1.csv
+//必须指定文件的列名，不然不成功 -f和--headerline不能一起用  --headerline：把第一行的字段隐藏即去掉文件列的标题name，不然标题也会导进去，导入时t1表可以不存在
+
+###############################################################################
+配置MongoDB副本集
+
+准备三台虚拟机，配置mongodb副本集，ip分别为192.158.4.51， 192.168.4.52，192.168.4.53其中一个是主节点，负责处理客户端请求，其余的都是从节点，负责复制主节点上的数据，实现存储数据副本，提高了数据的可用性，具体分配如表-1所示：
+第一步:配置三台机器,修改配置文件
+vim etc/mongodb.conf
+dbpath=/usr/local/mongodb/data/db/
+logpath=/usr/local/mongodb/log/mongodb.log
+logappend=true 
+fork=true
+bind_ip=192.168.4.51
+port=27077
+replSet=rs1        
+//加入到副本集，rs1名字随便起，想知道谁和我在一个副本集里，三台机器的名字一样,都写rs1
+
+上边配置3台mongdb服务器,配置都一样
+
+第二步:三台测试成功后,配置集群信息，任意一台都可以
+ rs1_config = {        //rs1_config随便起变量名,要记住
+ _id:"rs1",         //必须为rs1这个，三台主机集群名，配置文件里面写的是这个
+ members:[
+ {_id:0,host:"192.168.4.51:27077"},        //_id值随意，host值固定
+ {_id:1,host:"192.168.4.52:27078"},
+ {_id:2,host:"192.168.4.53:27079"}
+ ]
+ };        //回车，出现下面情况为成功
+
+第三步:初始化Replica Sets环境
+> rs.initiate(rs1_config)
+注意：如果初始化错误，重启服务登陆之后重新设置变量，之后再重新初始化
+
+第四步:查看状态
+rs.status()              查看状态信息
+ rs .isMaster( )        查看是否是master库
+
+第五步:验证副本集，同步数据验证（51上面写数据）
+
+自动切换主库验证,主库宕机后,再重启会变成从
+
+##############################################################################
+
+文档管理
+
+插入文档
+查询文档
+更新文档
+删除文档
+
+db.user.find（{条件},{定义显示的字段}） #指定查询条件并指定显示的字段
+
+db.user.find({},{name:1})    查看每行的name字段
+db.user.find({},{_id:0})    不看_id字段
+db.user.find({},{_id:0,name:1})  不看_id那一列，看name那一列
+db.user.find({name:/^a/},{_id:0})        查看以a开头的name字段
+显示查询结果的前一行
+limit 数字
+db.user.find({name:/^a/},{_id:0}).limit (1)
+
+db.user.findOne({name:/^a/},{_id:0,name:1,shell:1,uid:1}) 显示name字段以a开头的第一行
+
+跳过几行显示 （2行）
+skip 数字
+db.user.find({name:/^a/},{_id:0,name:1,shell:1}).skip (2)
+
+默认升序排序
+sort 字段名
+db.user.find({name:/^a/},{_id:0,name:1,shell:1,uid:1}).sort({uid:1})
+
+降序排序db.user.find({name:/^a/},{_id:0,name:1,shell:1,uid:1}).sort({uid:-1})
+
+显示name字段以a开头和uid为3的所有行
+db.user.find({name:/^a/,uid:3},{_id:0,name:1,shell:1,uid:1})
+
+条件判断的表示方式
+$in 在...里
+db.user.find({uid:{$in:[1,6,9]}})        //uid的为1或者6或者9的匹配
+$nin 不在...里
+db.user.find({uid:{$nin:[1,6,9]}},{_id:0,name:1,uid:1})
+$or 条件满足任意其中一个即可
+db.user.find({$or:[{name:"root"},{uid:1}]},{_id:0,name:1,uid:1})
+
+正则匹配，以a开头的name字段
+db.user.find({name:/^a/},{_id:0,name:1,uid:1})
+
+数值比较
+$lt(小于) $lte（小于等于） $gt（大于） $gte（大于等于） $ne（不等于）
+db.user.find({uid:{$gte:10,$lte:40}},{_id:0,name:1,uid:1})
+
+匹配null：可以匹配没有的字段，也可以检查这个字段有没有
+db.user.save({name:null,uid:null})
+
+save和insert的区别
+相同点：当集合不存在时创建集合，并插入记录
+不同点：save() _id字段值已经存在时，修改文档字段值
+insert() _id字段值已经存在时，放弃修改文档字段值
+
+插入多行文档
+ db.t1.insertMany([{name:"xiaojiu"},{name:"laoshi"}])
+
+update修改
+db.user.update({name:"root"},{password:"XXX"})  
+//如果这一列不写完整，这一行除了password这一行，这一列的其他值都没有了相当于删除（要写完整）
+
+$set 条件匹配时，修改指定字段的值(局部修改)
+db.user.update({name:"adm"},{$set:{password:"AAA"}})
+
+$unset 删除与条件匹配文档的字段
+db.user.update({name:"sync"},{$unset:{password:1}})     
+//删除password字段
+
+数组
+db.user.insert({name:"bob",like:["a","b","c","d","e","f",]})
+
+$pop 删除数组末尾一个元素，1删除最后一个，-1删除第一个
+ db.user.update({name:"bob"},{$pop:{like:1}})    
+
+$push 向数组中添加新元素
+db.user.update({name:"bob"},{$push:{like:"Z"}})        //默认添加到最后
+
+$addToSet 避免重复添加
+ db.user.update({name:"bob"},{$addToSet:{like:"W"}})
+
+$pull 删除数组里的指定元素，若有两个bob可以用_id值定义把name:"bob"换成id值
+db.user.update({name:"bob"},{$pull:{like:"c"}})
+
+$inc 条件匹配时，字段值自加或自减
+db.user.update({uid:{$lte:10}},{$inc:{uid:2}})         
+
+删除文档
+remove()与drop()的区别
+remove()删除文档时不删除索引
+drop()删除集合的时候同时删除索引
+
+db.t1.remove({})
+
+db.user.remove({name:"/^a/"})        //删除以a开头的记录
+
+db.t1.drop()        //删除集合t1
