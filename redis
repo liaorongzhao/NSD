@@ -353,4 +353,208 @@ RDB优点:
 宕机时，仅可能丢失1秒的数据
 RDB的缺点:
 AOF文件的体积通常会大于RDB文件的体积
-执行fsync策略时的速度可能会比RDB慢
+
+##############################################################################
+
+redis数据类型
+
+1）String字符串
+set key value [ex seconds] [px milliseconds] [nx|xx]
+设置key及值，过期时间可以使用秒或毫秒为单位
+setrange key offset value
+从偏移量开始复写key的特定位的值
+
+redis-cli -h 192.168.4.51 -a 123456
+set  first  "hello world"
+setrange  first  6  "Redis"     //改写为hello Redis
+get first
+
+strlen key，统计字串长度
+strlen first
+
+append key value 存在则追加，不存在则创建key及value，返回key长度
+append myname jacob
+
+setbit key offset value 对key所存储字串，设置或清除特定偏移量上的位(bit)，value值可以为1或0，offset为0~2^32之间，key不存在，则创建新key
+
+192.168.4.51:6379> setbit  bit  0  1          //设置bit第0位为1
+(integer) 0
+192.168.4.51:6379> setbit  bit  1  0          //设置bit第1位为0 
+(integer) 0
+
+bitcount key 统计字串中被设置为1的比特位数量
+
+192.168.4.51:6379> setbit  bits 0 1        //0001
+(integer) 0
+192.168.4.51:6379> setbit  bits 3 1        //1001
+(integer) 0
+192.168.4.51:6379> bitcount  bits            //结果为2
+(integer) 2
+
+记录网站用户上线频率，如用户A上线了多少天等类似的数据，如用户在某天上线，则使用setbit，以用户名为key，将网站上线日为offset，并在该offset上设置1，最后计算用户总上线次数时，使用bitcount用户名即可，这样即使网站运行10年，每个用户仅占用10*365比特位即456字节
+
+192.168.4.51:6379> setbit  peter  100  1        //网站上线100天用户登录了一次
+(integer) 0
+192.168.4.51:6379> setbit  peter  105  1        //网站上线105天用户登录了一次
+(integer) 0
+192.168.4.51:6379> bitcount  peter
+(integer) 2
+
+decr key 将key中的值减1，key不存在则先初始化为0，再减1
+
+192.168.4.51:6379> set z 10
+OK
+192.168.4.51:6379> decr z
+(integer) 9
+192.168.4.51:6379> decr z
+(integer) 8
+192.168.4.51:6379> decr bb
+(integer) -1
+192.168.4.51:6379> decr bb
+(integer) -2
+
+decrby key decrement 将key中的值，减去decrement
+192.168.4.51:6379> set count 100
+OK
+192.168.4.51:6379> DECRBY cc 20    //定义每次减少20（步长）
+(integer) -20
+192.168.4.51:6379> DECRBY cc 20
+(integer) -40
+
+get key 返回key存储的字符串值，若key不存在则返回nil，若key的值不是字串，则返回错误，get只能处理字串
+
+192.168.4.51:6379> get a
+(nil)
+
+getrange key start end 返回字串值中的子字串，截取范围为start和end，负数偏移量表示从末尾开始计数，-1表示最后一个字符，-2表示倒数第二个字符
+
+192.168.4.51:6379> set x 123456789
+OK
+192.168.4.51:6379> getrange x -5 -1
+"56789"
+192.168.4.51:6379> getrange x 0 4
+
+incr key 将key的值加1，如果key不存在，则初始为0后再加1，主要应用为计数器
+
+192.168.4.51:6379> set page 20
+OK
+192.168.4.51:6379> incr page
+(integer) 21
+
+incrby key increment 将key的值增加increment
+192.168.4.51:6379> set x 10
+OK
+192.168.4.51:6379> incr x
+(integer) 11
+192.168.4.51:6379> incr x
+(integer) 12
+
+incrbyfloat key increment 为key中所储存的值加上浮点数增量 increment
+192.168.4.51:6379> set num 16.1
+OK
+192.168.4.51:6379> incrbyfloat num 1.1
+"17.2"
+
+mset key value [key value …] 设置多个key及值，空格分隔，具有原子性
+192.168.4.51:6379> mset j 9  k 29
+OK
+
+mget key [key…] 获取一个或多个key的值，空格分隔，具有原子性
+192.168.4.51:6379> mget j k
+1) "9"
+2) "29"
+############################################################################
+第二种类型list列表
+
+Redis的list是一个字符队列，先进后出，一个key可以有多个值
+lpush key value [value…] 将一个或多个值value插入到列表key的表头，Key不存在，则创建key
+
+192.168.4.51:6379> lpush list a b c        //list值依次为c b a
+(integer) 3
+
+lrange key start stop 从开始位置读取key的值到stop结束
+192.168.4.51:6379> lrange list 0 2        //从0位开始，读到2位为止
+1) "c"
+2) "b"
+3) "a"
+192.168.4.51:6379> lrange list 0 -1    //从开始读到结束为止
+1) "c"
+2) "b"
+3) "a"
+192.168.4.51:6379> lrange list 0 -2        //从开始读到倒数第2位值
+1) "c"
+2) "b"
+
+lpop key 移除并返回列表头元素数据，key不存在则返回nil
+192.168.4.51:6379> lpop list        //删除表头元素，可以多次执行
+"c"
+192.168.4.51:6379>  LPOP list
+"b"
+
+llen key 返回列表key的长度
+192.168.4.51:6379>  llen list
+(integer) 1
+
+lindex key index 返回列表中第index个值
+192.168.4.51:6379> lindex  list  1
+"c"
+
+lset key index value 将key中index位置的值修改为value
+192.168.4.51:6379> lpush list a b c d 
+(integer) 5
+192.168.4.51:6379> lset list 3 test        //将list中第3个值修改为test
+OK
+
+rpush key value [value…] 将value插入到key的末尾
+192.168.4.51:6379> rpush list3  a b c    //list3值为a b c
+(integer) 3
+192.168.4.51:6379> rpush list3 d    //末尾插入d
+(integer) 4
+
+rpop key 删除并返回key末尾的值
+192.168.4.51:6379> RPOP list3 
+"d"
+###########################################################################
+第三种类型hash表
+
+hset key field value 将hash表中field值设置为value
+192.168.4.51:6379> hset site google 'www.g.cn'
+(integer) 1
+192.168.4.51:6379> hset site baidu 'www.baidu.com'
+(integer) 1
+
+hget key filed 获取hash表中field的值
+192.168.4.51:6379> hget site google
+"www.g.cn"
+
+hmset key field value [field value…] 同时给hash表中的多个field赋值
+192.168.4.51:6379> hmset site google www.g.cn  baidu www.baidu.com
+OK
+
+hmget key field [field…] 返回hash表中多个field的值
+192.168.4.51:6379> hmget site google baidu
+1) "www.g.cn"
+2) "www.baidu.com"
+
+hkeys key 返回hash表中所有field名称
+192.168.4.51:6379> hmset site google www.g.cn baidu www.baidu.com
+OK
+192.168.4.51:6379> hkeys  site
+1) "google"
+2) "baidu"
+
+hgetall key 返回hash表中所有key名和对应的值列表
+192.168.4.51:6379> hgetall site
+1) "google"
+2) "www.g.cn"
+3) "baidu"
+4) "www.baidu.com"
+
+hvals key 返回hash表中所有key的值
+192.168.4.51:6379> hvals site
+1) "www.g.cn"
+2) "www.baidu.com"
+
+hdel key field [field…] 删除hash表中多个field的值，不存在则忽略
+192.168.4.51:6379> hdel  site  google  baidu
+(integer) 2
