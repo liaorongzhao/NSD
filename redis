@@ -1,0 +1,356 @@
+nosql ---> not  only  sql 
+ 泛指非关系型数据库,不需要预先定义数据存储结构,表里每条记录都可以有不同的
+ 类型和结构
+
+主流软件
+redis-->
+1.remote dictionary server(远程字典服务器)
+2.高性能的分布式内存数据库
+3.支持持久化,可以把内存中的数据保存到硬盘,两种方式rdb和aof
+4.支持list,hash,set,zset数据类型
+5.支持master-slave模式数据备份
+mongdb
+memcache
+######################################################################
+
+部署redis服务
+
+第一步:先准备源码安装的环境,gcc  make gcc-c++
+yum -y install gcc gcc-c++ make
+
+第二步:解包
+tar -zxf redis-4.0.8.tar.gz
+cd redis-4.0.8/
+make && make  install  (不需要./configure)
+
+第三步:初始化数据库
+cd redis-4.0.8/utils/
+./install_server.sh          执行初始化的脚本
+
+执行过程中
+Port           : 6379                   //端口号
+Config file    : /etc/redis/6379.conf         //配置文件目录
+Log file       : /var/log/redis_6379.log      //日志目录
+Data dir       : /var/lib/redis/6379          //数据库目录
+Executable     : /usr/local/bin/redis-server  //启动程序的目录
+Cli Executable : /usr/local/bin/redis-cli     //命令行的连接工具
+Is this ok? Then press ENTER to go on or Ctrl-C to abort.  //回车完成配置
+Copied /tmp/6379.conf => /etc/init.d/redis_6379    //服务启动脚本
+
+最后会出现
+Installation successful!        //安装成功
+
+第四步:查看状态 
+/etc/init.d/redis_6379 status
+netstat -antupl |grep :6379
+/etc/init.d/redis_6379 stop    停止服务
+/etc/init.d/redis_6379 start   启动服务
+
+###########################################################################
+
+redis数据库的一些基本操作(增删改查)
+
+1.连接redis
+ redis-cli 
+ 连上之后ping
+ PONG            //PONG说明服务正常
+2.设置变量test，值为123，查看变量test的值
+常用指令操作：
+set keyname keyvalue 存储
+get keyname 获取
+127.0.0.1:6379> set test 123
+OK
+127.0.0.1:6379> get test
+"123"
+
+del keyname 删除变量
+127.0.0.1:6379> del test
+
+keys * 打印所有变量
+
+EXISTS keyname 测试是否存在  (命令大小写无所谓)
+
+type keyname 查看类型
+
+move keyname dbname 移动变量
+127.0.0.1:6379> move k2 1            //移动k2到1库
+
+select 数据库编号0-15 切换库
+127.0.0.1:6379> select 1        //切换到1库
+
+expire keyname 10 设置有效时间
+
+ttl keyname 查看生存时间
+
+flushall 删除所有变量
+
+save 保存所有变量
+
+shutdown 关闭redis服务
+
+############################################################################
+
+修改Redis服务运行参数
+
+第一步:先备份一份配置文件
+cp /etc/redis/6379.conf  /root/6379.conf     //可以先备份一份，防止修改错误没法还原
+第二步:停止服务,然后修改配置
+/etc/init.d/redis_6379 stop     先停止服务在修改配置文件
+vim /etc/redis/6379.conf
+
+bind  192.168.4.51                //设置服务使用的ip
+port 6351                            //更改端口号
+requirepass 123456                //设置密码
+第三步:启动服务,并查看状态
+/etc/init.d/redis_6379 start
+ss -antul | grep 6351        //查看有端口6351
+
+由于修改了配置文件所以在连接的时候需要加上ip和端口
+redis-cli  -h 192.168.4.51 -p 6351
+192.168.4.51:6351> ping
+(error) NOAUTH Authentication required.    报错
+192.168.4.51:6351> auth 123456            //输入密码才能操作（因为之前设置过密码）
+OK
+192.168.4.51:6351> ping
+PONG
+
+还可以直接在命令行输入密码连接
+redis-cli  -h 192.168.4.51 -p 6351  -a 123456
+
+由于修改Redis服务运行参数，所以在停止服务的时候也不能用默认的方法停止
+redis-cli  -h 192.168.4.51 -p 6351   -a 123456 shutdown 
+
+#############################################################################
+
+部署LNMP+Redis
+
+第一步:安装redis，（不会搭建的请参考案例1）
+第二步:安装php支持的功能模块（52上面操作）
+yum -y install php-cli
+php -m  | grep -i redis        //没有redis模块
+
+tar -zxf php-redis-2.2.4.tar.gz
+
+yum -y install autoconf automake    pcre-devel  
+安装几个依赖包,不然执行phpize 生成一个php的文件会报错
+
+find / -name "php-config"
+
+./configure  --with-php-config=/usr/bin/php-config    //指定模块编译的路径
+
+ make && make install
+
+php -m  | grep -i redis    会出现redis
+
+第三步:部署lnmp
+
+第四步:用PHP脚本测试
+
+#############################################################################
+
+部署redis集群
+
+第一步:环境准备和把redis的软件包传到6台数据库服务器上面，安装redis服务器，六台服务器同样操作
+
+第二步:停止服务,修改配置文件,每台都要改,改成对应的ip和不同的端口号
+bind 192.168.4.51        //修改ip
+port 6351        //不允许相同，只指定物理接口的ip
+daemonize yes         //以守护进程方式运行
+pidfile /var/run/redis_6351.pid 
+cluster-enabled yes     //是否启用集群，前提是以守护进程方式运行
+cluster-config-file nodes-6351.conf        
+//存储集群信息的配置文件，自动生成，不允许相同
+cluster-node-timeout 5000        //集群节点通信超时时间
+...
+
+第三步:启动服务,查看端口
+/etc/init.d/redis_6379 start     //启动服务
+ss -antlp | grep 6351            //查看有端口
+
+LISTEN     0      128    192.168.4.51:6351                     *:*                   users:(("redis-server",pid=11092,fd=6))
+LISTEN     0      128    192.168.4.51:16351                    *:*                   users:(("redis-server",pid=11092,fd=8))        //16051：集群中的主机通信时用的端口
+
+注意:关闭防火墙
+setenforce 0
+systemctl disable  firewalld   //关闭防火墙不自启
+
+第四步:查看集群信息,
+redis-cli  -h 192.168.4.51 -p 6351
+192.168.4.51:6351> ping
+PONG
+192.168.4.51:6351> cluster info      显示集群是fail
+192.168.4.51:6351> cluster nodes     只有自己一台
+
+第五步:部署ruby脚本运行环境（在任意一台上执行创建集群的脚本都可以）这里在51上面执行
+安装包  yum -y install  ruby rubygems
+rpm -ivh –nodeps ruby-devel-2.0.0.648-30.el7.x86_64.rpm  依赖包,光盘没有的
+
+gem install redis
+
+第六步:生成创建集群的脚本
+cd /root/redis/redis-4.0.8/src/
+cp redis-trib.rb /usr/local/bin/
+
+redis-trib.rb  create --replicas 1 \ 
+192.168.4.51:6351  192.168.4.52:6352 \ 
+192.168.4.53:6353 192.168.4.54:6354  \ 
+192.168.4.55:6355 192.168.4.56:6356
+//--replicas 1 给每一个主配置一个从库
+
+第七步:查看集群信息，任意一台主机访问本机的redis服务查看即可
+cluster info 查看集群信息
+cluster nodes 查看集群节点信息
+
+############################################################################
+
+管理redis集群
+
+添加集群
+格式：redis-trib.rb 选项 参数
+选项： add-node 添加主机（不指定角色为主）
+
+redis-trib.rb add-node 192.168.4.58:6358 192.168.4.51:6351
+
+redis-trib.rb  check 192.168.4.58:6358        //查看状态
+
+手动对集群进行分片迁移
+redis-trib.rb  reshard   192.168.4.58:6358
+How many slots do you want to move (from 1 to 16384)?4096   
+//拿出多少个hash 槽给主机192.168.4.58
+What is the receiving node ID?  c5e0da48f335c46a2ec199faa99b830f537dd8a0   
+//主机192.168.4.58的id值
+Source node #1:all      //从当前所有的主里面获取hash槽
+Do you want to proceed with the proposed reshard plan (yes/no)?yes
+
+redis-trib.rb  check 192.168.4.58:6358  再次查看
+
+删除master角色的主机
+
+先删除主机占用的hash槽
+ redis-trib.rb  reshard 192.168.4.58:6358
+How many slots do you want to move (from 1 to 16384)?4096           
+//移除hash 槽的个数
+What is the receiving node ID?  bc5c4e082a5a3391b634cf433a6486c867cfc44b 
+    //要移动给谁的id即目标主机（这里可以随机写一个master的ID）  
+Source node #1: c5e0da48f335c46a2ec199faa99b830f537dd8a0
+//从谁那移动即源主机（这里写4.58的ID）  
+Source node #2:done           //设置完毕
+
+删除集群主机4.58(删除之后redis服务自动关闭
+ redis-trib.rb del-node 192.168.4.58:6358 \ 
+ c5e0da48f335c46a2ec199faa99b830f537dd8a0    //删除谁+删除的id
+
+添加从节点主机，随机添加
+redis-trib.rb  add-node  --slave \ 
+192.168.4.57:6357  192.168.4.51:6351
+
+移除从节点，从节点主机没有槽位范围，直接移除即可
+命令格式：
+redis-trib.rb del-node 192.168.4.57:6357 主机id值
+
+redis-trib.rb  del-node 192.168.4.57:6357  \ 
+f6649ea99b2f01faca26217691222c17a3854381
+
+############################################################################
+
+配置redis主从复制
+
+单一的redis默认为主,只需要做从库的指定一下主库
+ 连上52的redis
+SLAVEOF   192.168.4.51  6379
+然后主库和从库上查看一下
+
+反客为主，主库宕机后，手动将从库设置为主库
+从库上操作
+SLAVEOF  no  one      //手动设为主库
+
+
+哨兵模式
+主库宕机后，从库自动升级为主库
+在slave主机编辑sentinel.conf文件
+在slave主机运行哨兵程序
+
+vim /etc/sentinel.conf
+sentinel   monitor   redisA       192.168.4.51   6379   1
+关键字      关键字    主机名自定义       ip           端口  票数
+sentinel   auth-pass  redis51 密码  //连接主库密码，若主库有密码加上这一行
+redis-sentinel /etc/sentinel.conf    //执行，之后把主库宕机
+
+#############################################################################
+
+RDB介绍：
+Redis数据库文件，全称Reids DataBase
+数据持久化方式之一
+在指定时间间隔内，将内存中的数据集快照写入硬盘
+术语叫Snapshot快照
+恢复时，将快照文件直接读到内存里
+相关配置参数
+文件名
+dbfilename “dump.rdb” 文件名
+save “” 禁用RDB
+数据从内存保存到硬盘的频率
+save 900 1 900秒内且有1次修改
+save 300 10 300秒内且有10次修改
+save 60 10000 60秒内且有10000修改
+
+ vim /etc/redis/6379.conf
+#   save ""        //启用RDB，去掉#号为禁用RDB
+save 120 10        //120秒内且有1次修改（满足三个条件中的任意一个都会保存）
+save 300 10
+save 60 10000
+
+RDB优点：
+高性能的持久化实现：创建一个子进程来执行持久化，先将数据写入临时文件，持久化过程结束后，再用这个临时文件替换上次持久化好的文件；过程中主进程不做任何IO操作
+比较适合大规模数据恢复，且对数据完整性要求不是非常高的场合
+RDB的缺点：
+意外宕机时，最后一次持久化的数据会丢失
+
+cd /var/lib/redis/6379/
+ls
+dump.rdb  nodes-6351.conf
+cp dump.rdb dump.rdb.bak    //备份dump.rdb，之后删除
+
+rm -rf dump.rdb
+/etc/init.d/redis_6379  start 
+192.168.4.51:6379> keys *        //连上数据库查看已经没有数据
+
+redis-cli -h 192.168.4.51 -a 123456 shutdown
+mv dump.rdb.bak dump.rdb
+/etc/init.d/redis_6379  start
+192.168.4.51:6379> keys *    连上查看数据恢复
+
+############################################################################
+
+1）AOF介绍
+只做追加操作的文件，Append Only File
+记录redis服务所有写操作
+不断的将新的写操作，追加到文件的末尾
+使用cat命令可以查看文件内容
+2）参数配置
+文件名
+appendfilename "appendonly.aof" 指定文件名
+appendonly yes 启用aof ，默认no
+AOF文件记录写操作的方式
+appendfsync always 有新写操作立即记录
+appendfsync everysec 每秒记录一次
+appendfsync no 从不记录
+
+redis-cli -h 192.168.4.51 -a 123456 shutdown
+rm -rf dump.rdb
+vim /etc/redis/6379.conf
+appendonly yes            //启用aof，默认no
+appendfilename "appendonly.aof"    //文件名
+appendfsync everysec            //每秒记录一次
+
+/etc/init.d/redis_6379  start
+
+vim appendonly.aof
+里边的内容可以删除,用下边的方式恢复
+
+ redis-check-aof --fix appendonly.aof        //恢复文件
+RDB优点:
+可以灵活的设置同步持久化appendfsync always或异步持久化appendfsync verysec
+宕机时，仅可能丢失1秒的数据
+RDB的缺点:
+AOF文件的体积通常会大于RDB文件的体积
+执行fsync策略时的速度可能会比RDB慢
