@@ -1,0 +1,94 @@
+版本控制软件subversion
+
+##############################################################
+subversion服务器的搭建
+
+第一步：装包，光盘里自带
+yum -y install subversion
+
+第二步：创建版本库
+mkdir /var/svn/
+svnadmin create /var/svn/project
+ls /var/svn/project/
+
+第三步：本地导入初始化数据
+cd /usr/lib/systemd/system/
+svn import . file:///var/svn/project/ -m "Init Data"
+
+第四步：修改配置文件，创建账户与密码（三个配置文件）
+1.vim /var/svn/project/conf/svnserve.conf
+anon-access = none
+//匿名无任何权限
+auth-access = write
+//有效账户可写
+2.vim /var/svn/project/conf/passwd
+[users]
+harry = pass
+//用户名和密码
+tom = pass
+//用户名和密码
+3./var/svn/project/conf/authz
+[/]                                //定义ACL访问控制
+harry = rw                        //用户对项目根路径可读可写
+tom = rw
+* = r                            //其他人只读
+
+第四步：启动服务
+svnserve -d  -r /var/svn/project    //-r是指定服务的目录，root的意思
+netstat -nutlp |grep svnserve   
+
+#####################################################################
+
+客户端一系列操作
+
+1.将服务器上的代码下载到本地
+svn --username harry --password pass  co svn://192.168.2.100/   code   
+//co 是checkout的意思，下载   下边有ci是commit提交的意思
+//这个用户名和密码是刚才配置文件里写的
+2.svn ci -m "modify user"        //将本地修改的数据同步到服务器
+  svn update                    //将服务器上新的数据同步到本地
+  svn info     svn://192.168.2.100    //查看版本仓库基本信息
+  svn log     svn://192.168.2.100    //查看版本仓库的日志
+  svn add test.sh                //将文件或目录加入版本控制，本地新建的文件需要先add添加才能上传，不然会报错
+  svn mkdir subdir                //创建子目录
+  svn rm timers.target            //使用svn删除文件
+  svn diff                     //查看所有文件的差异
+  svn diff umount.target        //仅查看某一个文件的差异
+  svn cat svn://192.168.2.100/reboot.target    //查看服务器文件的内容
+  svn revert tmp.mount            //还原tmp.mount文件
+  svn merge -r7:2    tuned.service    //将文件从版本7还原到版本2
+
+#############################################################################
+
+使用Subversion协同工作,遇到冲突的解决办法
+
+1.harry和tom修改不同的文件
+两个都可以正常提交，但是自己手里的并不是最新版本的，需要svn  update更新一下
+
+2.harry和tom修改相同文件的不同行
+先提交的不报错，后提交的会报错，后提交的要先更新一下服务器上新的版本然后再提交
+
+3.harry和tom修改相同文件的相同行
+A客户端 sed  -i  '1c [UNIT]' tuned.service
+svn ci -m "modified"
+B客户端 sed  -i  '1c [unit]' tuned.service
+svn ci -m "modified"
+B客户端  svn update                    //出现冲突，需要解决
+Select: (p) postpone, (df) diff-full, (e) edit,
+        (mc) mine-conflict, (tc) theirs-conflict,
+        (s) show all options:p                    //选择先标记p，随后解决
+B客户端  ls
+tuned.service   tuned.service.mine        tuned.service.r10    tuned.service.r9
+B客户端  mv tuned.service.mine tuned.service   //覆盖一下
+B客户单  rm  -rf  tuned.service.r10 tuned.service.r9   //删除不需要的
+B客户端  svn ci -m "modified"    //解决冲突
+
+####################################################
+
+版本库数据的备份与恢复
+
+svnadmin dump /var/svn/project > project.bak  //备份
+
+svnadmin load /var/svn/project2 < project.bak      //还原
+
+
